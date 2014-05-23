@@ -87,6 +87,8 @@ if __name__ == "__main__":
 		scanLine += 1
 		if scanLine % 5000 == 0:
 			print str(scanLine) + " lines scanned ..."
+		if scanLine == 124943:
+			break
 
 	elapsedTime = time.time() - startTime
 	if elapsedTime < 60:
@@ -124,7 +126,7 @@ if __name__ == "__main__":
 		outputFile.write(writeRow)
 	outputFile.write("\n);")
 	outputFile.close()
-	print "SQL_Load_Script.sql is generated at " + currentDir
+	print "SQL_Load_Script.sql is generated at " + currentDir + "\SQL_Load_Script.sql"
 
 
 
