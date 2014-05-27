@@ -4,24 +4,29 @@ import sys
 import time
 from datetime import datetime
 
+# Variable initialization
 currentDir = os.getcwd()
 scriptName = sys.argv[0]
 fileName = sys.argv[1]
 hasHeader = sys.argv[2]
 dlm = sys.argv[3]
 tableName = sys.argv[4]
-
-if dlm == "\\t":
-	file = csv.reader(open(fileName, "r"), delimiter = "\t")
-else:
-	file = csv.reader(open(fileName, "r"), delimiter = dlm)
-firstLine = file.next()
-nCol = len(firstLine)
 header = []
 dataRow = []
 dataInfo = []
 scanLine = 0
 
+# Read file and parse it row by row based on delimiter
+if dlm == "\\t":
+	file = csv.reader(open(fileName, "r"), delimiter = "\t")
+else:
+	file = csv.reader(open(fileName, "r"), delimiter = dlm)
+
+# Read first line of file for later process
+firstLine = file.next()
+nCol = len(firstLine)
+
+# Detect data type of a given element
 def getType(value):
 	dataTypes = [
 		(int, int),
@@ -47,6 +52,7 @@ def getType(value):
 			pass
 	return str
 
+# Set data type for a given element
 def setType(item):
 	dataDict = {}
 	dataType = getType(item).__name__
@@ -63,22 +69,25 @@ def setType(item):
 	dataDict[dataType] = value
 	return dataDict
 
+# Main method
 if __name__ == "__main__":
-	if hasHeader.lower()[0] == "y":
+	if hasHeader.lower()[0] == "y": # If data has header, set it as first line and start scanning from next line
 		header = firstLine
 		dataRow = file.next()
-	elif hasHeader.lower()[0] == "n":
+	elif hasHeader.lower()[0] == "n": # If data does not have header, set column header and start scanning from first line
 		for i in range(nCol):
 			header.append("V" + str(i))
 		dataRow = firstLine
 	else:
 		print "Please specify if the data has a header: yes or no?"
-	
+
+	# Scanning process starts here
 	print "Start scanning ..."
 	startTime = time.time()
+	# Initialize data type array
 	for item in dataRow:
 		dataInfo.append(setType(item))
-
+	# Loop through rows and columns to update data type array
 	for row in file:
 		for i in range(nCol):
 			currentType = getType(row[i]).__name__
@@ -87,9 +96,7 @@ if __name__ == "__main__":
 		scanLine += 1
 		if scanLine % 5000 == 0:
 			print str(scanLine) + " lines scanned ..."
-		if scanLine == 124943:
-			break
-
+	# Calculate and parse elapsed time
 	elapsedTime = time.time() - startTime
 	if elapsedTime < 60:
 		displayTime = str(round(elapsedTime, 4)) + "s"
@@ -98,13 +105,14 @@ if __name__ == "__main__":
 	else:
 		displayTime = str(int(elapsedTime / 3600)) + "h" + str(int(elapsedTime % 3600 / 60)) + "m" + str(round(elapsedTime % 3600 % 60, 2)) + "s"
 
+	# Print scanning statistics to console
 	print "Scanning completed! Total number of rows: " + str(scanLine)
 	print "Total scanning time: " + displayTime + "."
-	
+
+	# Create output file
 	outputFile = open("SQL_Load_Script.sql", "w")
 	outputFile.write("create table " + tableName + " (\n")
 	for i in range(nCol):
-#		print item.keys()[0] + str(item[item.keys()[0]])
 		if dataInfo[i].keys()[0] == "datetime":
 			typeValue = "date,\n"
 		elif dataInfo[i].keys()[0] == "str":
@@ -127,9 +135,5 @@ if __name__ == "__main__":
 	outputFile.write("\n);")
 	outputFile.close()
 	print "SQL_Load_Script.sql is generated at " + currentDir + "\SQL_Load_Script.sql"
-
-
-
-
 
 
