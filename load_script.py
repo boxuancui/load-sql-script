@@ -15,6 +15,7 @@ header = []
 dataRow = []
 dataInfo = []
 scanLine = 0
+lenCol = {}
 
 # Read file and parse it row by row based on delimiter
 if dlm == "\\t":
@@ -25,6 +26,8 @@ else:
 # Read first line of file for later process
 firstLine = file.next()
 nCol = len(firstLine)
+for i in range(nCol):
+	lenCol[i] = 0
 
 # Detect data type of a given element
 def getType(value):
@@ -90,6 +93,8 @@ if __name__ == "__main__":
 	# Loop through rows and columns to update data type array
 	for row in file:
 		for i in range(nCol):
+			if lenCol[i] < len(row[i]):
+				lenCol[i] = len(row[i])
 			currentType = getType(row[i]).__name__
 			if (dataInfo[i].keys()[0] != currentType) and (dataInfo[i].keys()[0] not in ("str", "datetime")):
 				dataInfo[i][currentType] = dataInfo[i].pop(dataInfo[i].keys()[0])
@@ -116,7 +121,7 @@ if __name__ == "__main__":
 		if dataInfo[i].keys()[0] == "datetime":
 			typeValue = "date,\n"
 		elif dataInfo[i].keys()[0] == "str":
-			typeValue = "varchar(" + str(dataInfo[i]["str"]) + "),\n"
+			typeValue = "varchar(" + str(lenCol[i]) + "),\n"
 		elif dataInfo[i].keys()[0] == "int":
 			if dataInfo[i]["int"] < 30000:
 				typeValue = "smallint,\n"
